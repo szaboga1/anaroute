@@ -31,8 +31,7 @@ RUN apt-get update && \
 # Python dependencies
 COPY requirements.txt /app/requirements.txt
 RUN python -m pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir "pybind11[global]"
+    pip install --no-cache-dir -r requirements.txt
 
 # Install Limbo (includes Lemon as third party)
 # Limbo is required for LEF/DEF parsers, GDSII parsers, and other utilities

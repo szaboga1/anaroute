@@ -1,3 +1,4 @@
 # Python requirements for anaroute
-pybind11
+pybind11[global]
+
 
