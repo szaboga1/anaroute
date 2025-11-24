@@ -24,6 +24,32 @@ make install
 cp *.so ~/.local/lib/pythonX.X/site-packages/ (your python version)
 ```
 
+## Docker Installation
+
+A Dockerfile is provided that includes all dependencies pre-installed. To use it:
+
+```bash
+# Build the Docker image
+docker build -t anaroute .
+
+# Run the container
+docker run -it --rm -v $(pwd):/app anaroute
+
+# Inside the container, build anaroute
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=/app/install ..
+make
+make install
+```
+
+The Docker image includes:
+- All system dependencies (CMake, Ninja, Boost, etc.)
+- LIMBO library at `/opt/limbo`
+- Lemon graph library (included with LIMBO)
+- SparseHash at `/opt/sparsehash`
+- Python 3.12 with pybind11
+
 # How to use ?
 Binary executable
 ```
