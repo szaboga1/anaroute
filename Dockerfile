@@ -52,11 +52,6 @@ RUN mkdir -p /opt/limbo && \
     cd /tmp && \
     rm -rf Limbo
 
-# Install Lemon (also installed with Limbo, but setting up explicit path)
-# Lemon is a C++ graph library used for routing algorithms
-RUN mkdir -p /opt/lemon && \
-    cp -r /opt/limbo/include/lemon /opt/lemon/include
-
 # Install SparseHash
 # SparseHash provides memory-efficient hash map implementations
 RUN mkdir -p /opt/sparsehash && \
@@ -70,8 +65,9 @@ RUN mkdir -p /opt/sparsehash && \
     rm -rf sparsehash
 
 # Set environment variables for dependencies
+# Note: Lemon is installed as part of Limbo at /opt/limbo/include/lemon
 ENV LIMBO_DIR=/opt/limbo \
-    LEMON_DIR=/opt/lemon \
+    LEMON_DIR=/opt/limbo \
     SPARSE_HASH_DIR=/opt/sparsehash
 
 # Create non-root user for development/debugging
