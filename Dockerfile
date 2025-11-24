@@ -18,12 +18,15 @@ RUN apt-get update && \
         pkg-config \
         python3-dev \
         libboost-all-dev \
+        libboost-graph-dev \
+        libboost-regex-dev \
         zlib1g-dev \
         autoconf \
         automake \
         libtool \
         bison \
         flex \
+        libfl-dev \
         wget \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/*
