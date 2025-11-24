@@ -1,0 +1,91 @@
+# syntax=docker/dockerfile:1
+FROM python:3.12-bookworm
+
+ENV DEBIAN_FRONTEND=noninteractive
+WORKDIR /app
+
+# System dependencies: build toolchain, debuggers, CMake, Ninja, Boost, etc.
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        gcc g++ \
+        clang \
+        gdb lldb \
+        valgrind \
+        cmake \
+        ninja-build \
+        git \
+        pkg-config \
+        python3-dev \
+        libboost-all-dev \
+        zlib1g-dev \
+        autoconf \
+        automake \
+        libtool \
+        bison \
+        flex \
+        wget \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Python dependencies
+COPY requirements.txt /app/requirements.txt
+RUN python -m pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir "pybind11[global]"
+
+# Install Limbo (includes Lemon as third party)
+# Limbo is required for LEF/DEF parsers, GDSII parsers, and other utilities
+RUN mkdir -p /opt/limbo && \
+    cd /tmp && \
+    git clone --depth 1 https://github.com/limbo018/Limbo.git && \
+    cd Limbo && \
+    mkdir -p build && \
+    cd build && \
+    cmake .. \
+        -DCMAKE_INSTALL_PREFIX=/opt/limbo \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DOPENBLAS=OFF \
+        -DINSTALL_LIMBO=ON && \
+    make -j$(nproc) && \
+    make install && \
+    cd /tmp && \
+    rm -rf Limbo
+
+# Install Lemon (also installed with Limbo, but setting up explicit path)
+# Lemon is a C++ graph library used for routing algorithms
+RUN mkdir -p /opt/lemon && \
+    cp -r /opt/limbo/include/lemon /opt/lemon/include
+
+# Install SparseHash
+# SparseHash provides memory-efficient hash map implementations
+RUN mkdir -p /opt/sparsehash && \
+    cd /tmp && \
+    git clone --depth 1 https://github.com/sparsehash/sparsehash.git && \
+    cd sparsehash && \
+    ./configure --prefix=/opt/sparsehash && \
+    make -j$(nproc) && \
+    make install && \
+    cd /tmp && \
+    rm -rf sparsehash
+
+# Set environment variables for dependencies
+ENV LIMBO_DIR=/opt/limbo \
+    LEMON_DIR=/opt/lemon \
+    SPARSE_HASH_DIR=/opt/sparsehash
+
+# Create non-root user for development/debugging
+RUN useradd -ms /bin/bash dev
+USER dev
+WORKDIR /app
+
+# Copy project (CLion will usually override with a bind mount)
+COPY --chown=dev:dev . /app
+
+ENV PYTHONPATH=/app \
+    CC=/usr/bin/gcc \
+    CXX=/usr/bin/g++ \
+    CMAKE_GENERATOR=Ninja \
+    PIP_NO_CACHE_DIR=1
+
+CMD ["/bin/bash"]
