@@ -36,6 +36,7 @@ RUN python -m pip install --upgrade pip && \
 
 # Install Limbo (includes Lemon as third party)
 # Limbo is required for LEF/DEF parsers, GDSII parsers, and other utilities
+# Note: Using latest version for simplicity. For production, consider pinning to a specific commit or tag.
 RUN mkdir -p /opt/limbo && \
     cd /tmp && \
     git clone --depth 1 https://github.com/limbo018/Limbo.git && \
@@ -54,6 +55,7 @@ RUN mkdir -p /opt/limbo && \
 
 # Install SparseHash
 # SparseHash provides memory-efficient hash map implementations
+# Note: Using latest version for simplicity. For production, consider pinning to a specific commit or tag.
 RUN mkdir -p /opt/sparsehash && \
     cd /tmp && \
     git clone --depth 1 https://github.com/sparsehash/sparsehash.git && \
@@ -71,7 +73,8 @@ ENV LIMBO_DIR=/opt/limbo \
     SPARSE_HASH_DIR=/opt/sparsehash
 
 # Create non-root user for development/debugging
-RUN useradd -ms /bin/bash dev
+# Using UID/GID 1000 to match common host user IDs and avoid permission issues with mounted volumes
+RUN useradd -ms /bin/bash -u 1000 -U dev
 USER dev
 WORKDIR /app
 
